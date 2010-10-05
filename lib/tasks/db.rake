@@ -46,5 +46,26 @@ namespace :db do
       raise "Task not supported by '#{abcs[RAILS_ENV]['adapter']}'"
     end
   end
+  
+  desc "Loads a specified sql to the environment db, defaults to db/development_data.sql"
+  task :database_load do 
+    require 'highline/import'
+    say "ERROR: sql file #{ENV['SQL']} not found" and exit if (ENV['SQL'] && !File.exists?(ENV['SQL']))
+    load 'config/environment.rb'
+    abcs = ActiveRecord::Base.configurations  
+    sql_file = ENV['SQL']||"db/development_data.sql"
+    say "loading data from: #{sql_file}"
+    case abcs[RAILS_ENV]["adapter"]
+    when 'mysql','mysql2'
+      ActiveRecord::Base.establish_connection(abcs[RAILS_ENV])
+      if abcs[RAILS_ENV]["password"].blank?
+        `mysql -h #{abcs[RAILS_ENV]["host"]} -u #{abcs[RAILS_ENV]["username"]} #{abcs[RAILS_ENV]["database"]} < #{sql_file}`
+      else
+        `mysql -h #{abcs[RAILS_ENV]["host"]} -u #{abcs[RAILS_ENV]["username"]} -p#{abcs[RAILS_ENV]["password"]} #{abcs[RAILS_ENV]["database"]} < #{sql_file}`
+      end
+    else
+      raise "Task not supported by '#{abcs[RAILS_ENV]['adapter']}'"
+    end
+  end
 
 end
