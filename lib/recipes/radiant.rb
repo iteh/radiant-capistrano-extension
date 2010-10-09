@@ -4,7 +4,7 @@ namespace :deploy do
   after "deploy:migrate", "deploy:radiant:migrate:extensions"
   after "deploy:symlink" do
     run "mkdir #{latest_release}/cache"
-    run "[ -f #{latest_release}/config/production_database.yml && cp #{latest_release}/config/production_database.yml #{latest_release}/config/database.yml; true"
+    run "[ -f #{latest_release}/config/production_database.yml ] && cp #{latest_release}/config/production_database.yml #{latest_release}/config/database.yml; true"
     run "chmod -R g+w #{latest_release}"
     run "[ ! -d #{shared_path}/assets ] && mkdir #{shared_path}/assets; true"
     run "[ ! -d #{shared_path}/galleries ] && mkdir #{shared_path}/galleries; true"
@@ -15,7 +15,7 @@ namespace :deploy do
     run "ln -s #{shared_path}/assets #{latest_release}/public/assets"
     run "ln -s #{shared_path}/galleries #{latest_release}/public/galleries"
     run "ln -s #{shared_path}/uploads #{latest_release}/public/uploads"
-    run "ln -s #{shared_path}/system #{latest_release}/public/system"
+    run "[ ! -h #{latest_release}/system ] &&  ln -s #{shared_path}/system #{latest_release}/public/system ; true"
     run "ln -s #{shared_path}/releases #{latest_release}/releases"
 
   end
