@@ -24,7 +24,8 @@ namespace :deploy do
     desc "clear cached copy, e.g. when changing submodule urls"
   task :clear_cached_copy do
     run <<-CMD
-rm -rf #{shared_path}/cached-copy
+rm -rf #{shared_path}/cached-copy;
+[ ! -d #{latest_release}/tmp/skins ] && rm -rf #{latest_release}/tmp/skins;true
     CMD
   end
   
@@ -145,6 +146,17 @@ task :local_db_runner do
   remote_db_load
   remote_cache_cleanup
   remote_db_cleanup
+end
+
+desc "Generate sphinx-config, rebuild search-index and restart sphinx"
+task :reload_sphinx do
+  rake = fetch(:rake, "rake")
+  rails_env = fetch(:rails_env, "production")
+  run "cd #{latest_release};"
+  run "#{rake} RAILS_ENV=#{rails_env} ts:stop"
+  run "#{rake} RAILS_ENV=#{rails_env} ts:conf"
+  run "#{rake} RAILS_ENV=#{rails_env} ts:in"
+  run "#{rake} RAILS_ENV=#{rails_env} ts:start"
 end
 
 
