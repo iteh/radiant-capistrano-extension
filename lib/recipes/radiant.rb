@@ -11,12 +11,17 @@ namespace :deploy do
     run "[ ! -d #{shared_path}/uploads ] && mkdir #{shared_path}/uploads; true"
     run "[ ! -d #{shared_path}/system ] && mkdir #{shared_path}/system; true"
     run "[ ! -d #{shared_path}/releases ] && mkdir #{shared_path}/releases; true"
+    run "[ ! -d #{shared_path}/page_attachments ] && mkdir #{shared_path}/page_attachments; true"
+
 
     run "ln -s #{shared_path}/assets #{latest_release}/public/assets"
     run "ln -s #{shared_path}/galleries #{latest_release}/public/galleries"
     run "ln -s #{shared_path}/uploads #{latest_release}/public/uploads"
+    run "ln -s #{shared_path}/page_attachments #{latest_release}/public/page_attachments"
     run "[ ! -h #{latest_release}/system ] &&  ln -s #{shared_path}/system #{latest_release}/public/system ; true"
     run "ln -s #{shared_path}/releases #{latest_release}/releases"
+    #this is a really annoying bug :-(
+    run "rm #{latest_release}/public/system/system ; true"
 
   end
 
@@ -76,19 +81,40 @@ rm -rf #{shared_path}/cached-copy;
       desc "fetch assets"
       task :fetch_assets do
         set :deploy_to_path,  File.join(deploy_to,"current","public","assets")
-        system "rsync -Lavz -e ssh #{user}@#{ehost}:#{deploy_to_path}/ public/assets "
+        system "rsync -Lavz -e ssh #{user}@#{ehost}:#{deploy_to_path}/ public/assets"
       end
 
       desc "fetch mailer system"
       task :fetch_system do
         set :deploy_to_path,  File.join(deploy_to,"current","public","system")
-        system "rsync -Lavz -e ssh #{user}@#{ehost}:#{deploy_to_path}/ public/system "
+        system "rsync -Lavz -e ssh #{user}@#{ehost}:#{deploy_to_path}/ public/system"
       end
 
       desc "fetch gallery"
       task :fetch_galleries do
         set :deploy_to_path,  File.join(deploy_to,"current","public","galleries")
-        system "rsync -Lavz -e ssh #{user}@#{ehost}:#{deploy_to_path}/ public/galleries "
+        system "rsync -Lavz -e ssh #{user}@#{ehost}:#{deploy_to_path}/ public/galleries"
+      end
+
+      desc "fetch page_attachments"
+      task :fetch_page_attachments do
+        set :deploy_to_path,  File.join(deploy_to,"current","public","page_attachments")
+        system "rsync -Lavz -e ssh #{user}@#{ehost}:#{deploy_to_path}/ public/page_attachments"
+      end
+
+      desc "fetch uploads"
+      task :fetch_uploads do
+        set :deploy_to_path,  File.join(deploy_to,"current","public","uploads")
+        system "rsync -Lavz -e ssh #{user}@#{ehost}:#{deploy_to_path}/ public/uploads"
+      end
+
+      desc "fetch all shared content"
+      task :fetch_all_shared_content do
+        fetch_assets
+        fetch_system
+        fetch_galleries
+        fetch_page_attachments
+        fetch_uploads
       end
     end
 
